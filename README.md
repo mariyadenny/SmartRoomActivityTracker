@@ -1,27 +1,57 @@
-# Smart Room Activity Tracker
+# Smart Room Occupancy and Activity Monitor
 
 ## Project Proposal
-This project will track room activity using a PIR motion sensor connected to an ESP32. When motion is detected, the system will measure how long the activity lasts and send the data over WiFi to a backend server.
+This project monitors activity patterns in a shared indoor room such as a study room, dorm lounge, or office using PIR motion sensors connected to an ESP32.
 
-The goal of this project is to analyze room usage patterns over time and identify when the room is most active or inactive.
+The goal is not just to detect motion, but to record meaningful motion events, including which sensor zone triggered, how long the activity lasted, and when the room is being used over time.
+
+Instead of continuously storing true/false motion states, the system uses an event-driven approach. When motion begins and ends, the ESP32 records a motion event locally. In later stages, these events will be sent over WiFi to a backend API, stored in a database, and visualized on a web dashboard.
+
+## Use Case
+This system can be used to monitor shared room usage and activity patterns.
+
+Possible users include:
+- Students using shared study rooms
+- RAs or staff monitoring common spaces
+- Anyone interested in room occupancy trends
+
+The system helps answer:
+- When is the room usually active?
+- How long does activity last?
+- Which zone of the room is most active?
 
 ## Data Collected
-- Timestamp (when motion occurs)
-- Motion detected (true/false)
-- Duration of motion (seconds)
-- Device status (online/offline)
-- Sensor ID (only if i want to use multiple ones)
+Each motion event currently includes:
+- sensor_id
+- zone_name
+- duration_ms
+- duration_seconds
+- device_status
 
-This data is collected to distinguish between brief movements and longer periods of activity, allowing for better analysis of room usage.
+Future versions will also include:
+- UTC timestamps
+- WiFi status
+- server receive time
+- multiple sensor zones
 
-## Hardware Needed
-- ESP32 microcontroller
+## Hardware
+- ESP32
 - PIR motion sensor
-- Breadboard and jumper wires
 
-## End User Features
-The user will be able to:
-- View room activity over time
-- Identify peak activity hours
-- See how long activity occurs
-- Detect long periods of inactivity
+
+## Current Progress
+- ESP32 configured in PlatformIO
+- PIR sensor connected and tested successfully
+- Local motion detection working
+- Motion event duration being recorded locally
+
+## Planned Modules
+- WiFi connection to tuiot
+- Flask backend API
+- MongoDB database
+- Dashboard for room activity trends
+
+## Stretch Goals
+- Multiple sensor zones
+- Activity summaries by time of day
+- Real-time event upload
