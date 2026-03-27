@@ -19,3 +19,17 @@ Content-Type: application/json
   "duration_seconds": 41.85,
   "device_status": "online"
 }
+
+### Success ResponseS
+```json
+{
+  "status": "success",
+  "message": "Motion event stored"
+}
+
+### Failure Response
+```json
+{
+  "status": "error",
+  "message": "Unauthorized or invalid payload"
+}
