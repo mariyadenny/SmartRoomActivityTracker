@@ -1,7 +1,6 @@
 # Data Models
 
 ## Local Motion Event
-```json
 {
   "sensor_id": "zone_1",
   "zone_name": "entry",
@@ -11,7 +10,6 @@
 }
 
 ## Future Backend Motion Event
-```json
 {
   "sensor_id": "zone_1",
   "zone_name": "entry",

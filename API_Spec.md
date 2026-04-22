@@ -1,4 +1,3 @@
-```md
 # API Specification
 
 ## POST /motion-event
@@ -11,7 +10,6 @@ Authorization: Bearer <token>
 Content-Type: application/json  
 
 ### Request Body
-```json
 {
   "sensor_id": "zone_1",
   "zone_name": "entry",
@@ -20,15 +18,13 @@ Content-Type: application/json
   "device_status": "online"
 }
 
-### Success ResponseS
-```json
+### Success Response
 {
   "status": "success",
   "message": "Motion event stored"
 }
 
 ### Failure Response
-```json
 {
   "status": "error",
   "message": "Unauthorized or invalid payload"
