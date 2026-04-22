@@ -1,10 +1,13 @@
 from pymongo import MongoClient
 
-def get_collection():
-    client = MongoClient("localhost", 27017)
-    db = client["smart_room_db"]
-    return db["motion_events"]
+# connect to MongoDB
+client = MongoClient("mongodb://localhost:27017/")
 
-def insert_motion_event(event):
-    collection = get_collection()
-    return collection.insert_one(event)
+# create/use database
+db = client["smart_room"]
+
+# create/use collection
+collection = db["motion_events"]
+
+def save_event(data):
+    collection.insert_one(data)

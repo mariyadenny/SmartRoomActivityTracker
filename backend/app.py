@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import logging
 from datetime import datetime, timezone
+from database import save_event
 
 app = Flask(__name__)
 
@@ -10,6 +11,10 @@ logging.basicConfig(
 )
 
 API_TOKEN = "SECRET123"
+
+@app.route("/", methods=["GET"])
+def home():
+    return "Smart Room backend is running"
 
 @app.route("/motion-event", methods=["POST"])
 def motion_event():
@@ -31,6 +36,7 @@ def motion_event():
     data["received_at_utc"] = datetime.now(timezone.utc).isoformat()
 
     logging.info(f"Event received: {data}")
+    save_event(data)
 
     return jsonify({
         "status": "success",
