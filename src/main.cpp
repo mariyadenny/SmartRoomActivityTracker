@@ -3,11 +3,21 @@
 #include <HTTPClient.h>
 #include "secrets.h"
 
-#define PIR_PIN 14
+// PIR sensor pins
+#define PIR1 14   // entry
+#define PIR2 27   // hallway
+#define PIR3 26   // room
 
-bool motionActive = false;
-unsigned long motionStart = 0;
+// Motion tracking state for each sensor
+bool motionActive1 = false;
+bool motionActive2 = false;
+bool motionActive3 = false;
 
+unsigned long motionStart1 = 0;
+unsigned long motionStart2 = 0;
+unsigned long motionStart3 = 0;
+
+// Connect ESP32 to WiFi
 void connectToWiFi() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to WiFi");
@@ -30,25 +40,9 @@ void connectToWiFi() {
   }
 }
 
-void sendMotionEvent(unsigned long durationMs, float durationSec) {
+// Send one motion event to Flask backend
+void sendMotionEvent(String sensor_id, String zone_name, unsigned long durationMs, float durationSec) {
   if (WiFi.status() == WL_CONNECTED) {
-
-    String sensor_id;
-    String zone_name;
-
-    int zone = random(1, 4);
-
-    if (zone == 1) {
-      sensor_id = "zone_1";
-      zone_name = "entry";
-    } else if (zone == 2) {
-      sensor_id = "zone_2";
-      zone_name = "hallway";
-    } else {
-      sensor_id = "zone_3";
-      zone_name = "room";
-    }
-
     HTTPClient http;
     http.begin(SERVER_URL);
 
@@ -83,8 +77,10 @@ void sendMotionEvent(unsigned long durationMs, float durationSec) {
 
 void setup() {
   Serial.begin(115200);
-  pinMode(PIR_PIN, INPUT);
-  randomSeed(millis());
+
+  pinMode(PIR1, INPUT);
+  pinMode(PIR2, INPUT);
+  pinMode(PIR3, INPUT);
 
   Serial.println("Smart Room Occupancy Monitor Started");
 
@@ -92,27 +88,74 @@ void setup() {
 }
 
 void loop() {
-  int motion = digitalRead(PIR_PIN);
+  int motion1 = digitalRead(PIR1);
+  int motion2 = digitalRead(PIR2);
+  int motion3 = digitalRead(PIR3);
 
-  if (motion == HIGH && !motionActive) {
-    motionActive = true;
-    motionStart = millis();
-    Serial.println("Motion started");
+  // ---------------- SENSOR 1: ENTRY ----------------
+  if (motion1 == HIGH && !motionActive1) {
+    motionActive1 = true;
+    motionStart1 = millis();
+    Serial.println("Zone 1 motion started");
   }
 
-  if (motion == LOW && motionActive) {
-    motionActive = false;
+  if (motion1 == LOW && motionActive1) {
+    motionActive1 = false;
 
-    unsigned long durationMs = millis() - motionStart;
+    unsigned long durationMs = millis() - motionStart1;
     float durationSec = durationMs / 1000.0;
 
-    Serial.println("Motion event:");
+    Serial.println("Zone 1 motion event");
     Serial.print("Duration (ms): ");
     Serial.println(durationMs);
     Serial.print("Duration (sec): ");
     Serial.println(durationSec, 2);
 
-    sendMotionEvent(durationMs, durationSec);
+    sendMotionEvent("zone_1", "entry", durationMs, durationSec);
+  }
+
+  // ---------------- SENSOR 2: HALLWAY ----------------
+  if (motion2 == HIGH && !motionActive2) {
+    motionActive2 = true;
+    motionStart2 = millis();
+    Serial.println("Zone 2 motion started");
+  }
+
+  if (motion2 == LOW && motionActive2) {
+    motionActive2 = false;
+
+    unsigned long durationMs = millis() - motionStart2;
+    float durationSec = durationMs / 1000.0;
+
+    Serial.println("Zone 2 motion event");
+    Serial.print("Duration (ms): ");
+    Serial.println(durationMs);
+    Serial.print("Duration (sec): ");
+    Serial.println(durationSec, 2);
+
+    sendMotionEvent("zone_2", "hallway", durationMs, durationSec);
+  }
+
+  // ---------------- SENSOR 3: ROOM ----------------
+  if (motion3 == HIGH && !motionActive3) {
+    motionActive3 = true;
+    motionStart3 = millis();
+    Serial.println("Zone 3 motion started");
+  }
+
+  if (motion3 == LOW && motionActive3) {
+    motionActive3 = false;
+
+    unsigned long durationMs = millis() - motionStart3;
+    float durationSec = durationMs / 1000.0;
+
+    Serial.println("Zone 3 motion event");
+    Serial.print("Duration (ms): ");
+    Serial.println(durationMs);
+    Serial.print("Duration (sec): ");
+    Serial.println(durationSec, 2);
+
+    sendMotionEvent("zone_3", "room", durationMs, durationSec);
   }
 
   delay(50);
