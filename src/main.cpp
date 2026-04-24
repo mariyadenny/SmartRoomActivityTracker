@@ -8,16 +8,17 @@
 #define PIR2 27   // hallway
 #define PIR3 26   // room
 
-// Motion tracking state for each sensor
+// track if motion is currently active
 bool motionActive1 = false;
 bool motionActive2 = false;
 bool motionActive3 = false;
 
+// store start time of motion
 unsigned long motionStart1 = 0;
 unsigned long motionStart2 = 0;
 unsigned long motionStart3 = 0;
 
-// Connect ESP32 to WiFi
+// connect ESP32 to WiFi
 void connectToWiFi() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to WiFi");
@@ -40,15 +41,17 @@ void connectToWiFi() {
   }
 }
 
-// Send one motion event to Flask backend
+// send motion data to backend
 void sendMotionEvent(String sensor_id, String zone_name, unsigned long durationMs, float durationSec) {
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
     http.begin(SERVER_URL);
 
+    // add headers
     http.addHeader("Content-Type", "application/json");
     http.addHeader("Authorization", String("Bearer ") + API_TOKEN);
 
+    // build JSON manually
     String json = "{";
     json += "\"sensor_id\":\"" + sensor_id + "\",";
     json += "\"zone_name\":\"" + zone_name + "\",";
@@ -60,11 +63,13 @@ void sendMotionEvent(String sensor_id, String zone_name, unsigned long durationM
     Serial.println("Sending JSON:");
     Serial.println(json);
 
+    // send POST request
     int httpResponseCode = http.POST(json);
 
     Serial.print("HTTP Response code: ");
     Serial.println(httpResponseCode);
 
+    // print server response
     String response = http.getString();
     Serial.println("Server response:");
     Serial.println(response);
@@ -78,6 +83,7 @@ void sendMotionEvent(String sensor_id, String zone_name, unsigned long durationM
 void setup() {
   Serial.begin(115200);
 
+  // set PIR pins as input
   pinMode(PIR1, INPUT);
   pinMode(PIR2, INPUT);
   pinMode(PIR3, INPUT);
@@ -88,20 +94,22 @@ void setup() {
 }
 
 void loop() {
+  // read sensor values
   int motion1 = digitalRead(PIR1);
   int motion2 = digitalRead(PIR2);
   int motion3 = digitalRead(PIR3);
 
-  // ---------------- SENSOR 1: ENTRY ----------------
+  // -------- SENSOR 1: ENTRY --------
   if (motion1 == HIGH && !motionActive1) {
     motionActive1 = true;
-    motionStart1 = millis();
+    motionStart1 = millis(); // start timing
     Serial.println("Zone 1 motion started");
   }
 
   if (motion1 == LOW && motionActive1) {
     motionActive1 = false;
 
+    // calculate duration
     unsigned long durationMs = millis() - motionStart1;
     float durationSec = durationMs / 1000.0;
 
@@ -111,10 +119,11 @@ void loop() {
     Serial.print("Duration (sec): ");
     Serial.println(durationSec, 2);
 
+    // send event
     sendMotionEvent("zone_1", "entry", durationMs, durationSec);
   }
 
-  // ---------------- SENSOR 2: HALLWAY ----------------
+  // -------- SENSOR 2: HALLWAY --------
   if (motion2 == HIGH && !motionActive2) {
     motionActive2 = true;
     motionStart2 = millis();
@@ -136,7 +145,7 @@ void loop() {
     sendMotionEvent("zone_2", "hallway", durationMs, durationSec);
   }
 
-  // ---------------- SENSOR 3: ROOM ----------------
+  // -------- SENSOR 3: ROOM --------
   if (motion3 == HIGH && !motionActive3) {
     motionActive3 = true;
     motionStart3 = millis();
@@ -158,5 +167,6 @@ void loop() {
     sendMotionEvent("zone_3", "room", durationMs, durationSec);
   }
 
+  // small delay to avoid noise
   delay(50);
 }
